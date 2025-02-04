@@ -107,14 +107,14 @@ public class ParkingService {
             Date outTime = new Date();
             ticket.setOutTime(outTime);
             boolean isDiscount = false;
+            if (ticketDAO.getNbTicket(vehicleRegNumber) >= 2){
+                isDiscount = true;
+            }
+            fareCalculatorService.calculateFare(ticket,isDiscount);
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
                 parkingSpotDAO.updateParking(parkingSpot);
-                if (ticketDAO.getNbTicket(vehicleRegNumber) >= 2){
-                    isDiscount = true;
-                }
-                fareCalculatorService.calculateFare(ticket,isDiscount);
                 System.out.println("Please pay the parking fare:" + ticket.getPrice());
                 System.out.println("Recorded out-time for vehicle number:" + ticket.getVehicleRegNumber() + " is:" + outTime);
             }else{
