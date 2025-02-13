@@ -51,14 +51,17 @@ public class ParkingServiceTest {
     @Test
     public void processExitingVehicleTest() throws Exception{
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-        when(ticketDAO.getNbTicket("ABCDEF")).thenReturn(2);
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);
+        when(ticketDAO.getNbTicket("ABCDEF")).thenReturn(2);
         when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true);
         when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
+
         parkingService.processExitingVehicle();
+
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
         verify(ticketDAO, Mockito.times(1)).getNbTicket("ABCDEF");
-
+        assertNotNull(ticket.getOutTime());
+        assertNotEquals(0, ticket.getPrice());
     }
 
     @Test
@@ -67,10 +70,14 @@ public class ParkingServiceTest {
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
         when(ticketDAO.saveTicket(any(Ticket.class))).thenReturn(true);
+
         parkingService.processIncomingVehicle();
+
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
-        verify(ticketDAO, Mockito.times(1)).getNbTicket("ABCDEF");
         verify(ticketDAO,Mockito.times(1)).saveTicket(any(Ticket.class));
+        assertNull(ticket.getOutTime());
+        assertEquals(0,ticket.getPrice());
+        assertNotNull(ticket.getInTime());
     }
 
     @Test
@@ -78,23 +85,30 @@ public class ParkingServiceTest {
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);
         when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(false);
+
         parkingService.processExitingVehicle();
+
         verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
         verify(parkingSpotDAO, never()).updateParking(any(ParkingSpot.class));
+        assertFalse(ticketDAO.updateTicket(ticket));
+
     }
 
     @Test
     public void testGetNextParkingNumberIfAvailable(){
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);
-        parkingService.getNextParkingNumberIfAvailable();
+
+        assertEquals(1, parkingService.getNextParkingNumberIfAvailable().getNumber());
         verify(parkingSpotDAO,Mockito.times(1)).getNextAvailableSlot(any(ParkingType.class));
+
     }
 
     @Test
     public void testGetNextParkingNumberIfAvailableParkingNumberNotFound (){
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(0);
+
         assertEquals(null, parkingService.getNextParkingNumberIfAvailable());
         verify(parkingSpotDAO,Mockito.times(1)).getNextAvailableSlot(any(ParkingType.class));
     }
@@ -102,6 +116,7 @@ public class ParkingServiceTest {
     @Test
     public void testGetNextParkingNumberIfAvailableParkingNumberWrongArgument () {
         when(inputReaderUtil.readSelection()).thenReturn(3);
+
         assertEquals(null, parkingService.getNextParkingNumberIfAvailable());
     }
 }
