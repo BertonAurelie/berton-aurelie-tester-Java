@@ -27,7 +27,7 @@ public class ParkingService {
         this.ticketDAO = ticketDAO;
     }
 
-    public void processIncomingVehicle() {
+    public Date processIncomingVehicle() {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
             if(parkingSpot !=null && parkingSpot.getNumber() > 0){
@@ -49,11 +49,13 @@ public class ParkingService {
                 ticketDAO.saveTicket(ticket);
                 System.out.println("Generated Ticket and saved in DB");
                 System.out.println("Please park your vehicle in spot number:"+parkingSpot.getNumber());
-                System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
+                System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+ ticket.getInTime());
+                return  inTime;
             }
         }catch(Exception e){
             logger.error("Unable to process incoming vehicle",e);
         }
+        return null;
     }
 
 

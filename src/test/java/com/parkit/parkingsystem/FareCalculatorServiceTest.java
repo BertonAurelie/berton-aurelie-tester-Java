@@ -123,7 +123,7 @@ public class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals( (24 * (Fare.CAR_RATE_PER_HOUR)) , ticket.getPrice());
+        assertEquals( (1440 * (Fare.CAR_RATE_PER_HOUR)) , ticket.getPrice());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class FareCalculatorServiceTest {
     @Test
     public void calculateFareCarWithDiscount(){
         Date inTime = new Date();
-        inTime.setTime( calculateTimeMinute(720) );//less than 30 minutes parking time should give parking fare free
+        inTime.setTime( calculateTimeMinute(115) );//less than 30 minutes parking time should give parking fare free
         Date outTime = new Date();
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
 
@@ -166,8 +166,7 @@ public class FareCalculatorServiceTest {
         ticket.setParkingSpot(parkingSpot);
         ticket.setVehicleRegNumber("TROIS");
         fareCalculatorService.calculateFare(ticket, true);
-        double obj1 = ((12 * Fare.CAR_RATE_PER_HOUR)*5)/100;
-        assertEquals(((12 * Fare.CAR_RATE_PER_HOUR)-obj1), ticket.getPrice() );
+        assertEquals((((115 * Fare.CAR_RATE_PER_HOUR)-(((115 * Fare.CAR_RATE_PER_HOUR)*5)/100))), ticket.getPrice() );
     }
 
     @Test
@@ -182,12 +181,17 @@ public class FareCalculatorServiceTest {
         ticket.setParkingSpot(parkingSpot);
         ticket.setVehicleRegNumber("TROIS");
         fareCalculatorService.calculateFare(ticket, true);
-        double obj1 = ((12 * Fare.BIKE_RATE_PER_HOUR)*5)/100;
-        assertEquals(((12 * Fare.BIKE_RATE_PER_HOUR)-obj1), ticket.getPrice() );
+        assertEquals((((720 * Fare.BIKE_RATE_PER_HOUR)-(((720 * Fare.BIKE_RATE_PER_HOUR)*5)/100))), ticket.getPrice() );
     }
 
     private long calculateTimeMinute(long minute){
-        return System.currentTimeMillis() - (minute * 60 * 1000);
+        if(minute > 60){
+            //get Hour
+            minute = minute * 60;
+        }
+        minute = System.currentTimeMillis() - (minute * 60 * 1000);
+
+        return minute;
     }
 
 }

@@ -34,18 +34,13 @@ public class ParkingServiceTest {
 
     @BeforeEach
     private void setUpPerTest() {
-        try {
-            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,true);
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,true);
 
-            ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));
-            ticket.setParkingSpot(parkingSpot);
-            ticket.setVehicleRegNumber("ABCDEF");
+        ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));
+        ticket.setParkingSpot(parkingSpot);
+        ticket.setVehicleRegNumber("ABCDEF");
 
-            parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw  new RuntimeException("Failed to set up test mock objects");
-        }
+        parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
     }
 
     @Test
@@ -63,6 +58,7 @@ public class ParkingServiceTest {
         assertNotNull(ticket.getOutTime());
         assertNotEquals(0, ticket.getPrice());
     }
+
 
     @Test
     public void testProcessIncomingVehicle() throws Exception{
@@ -91,6 +87,7 @@ public class ParkingServiceTest {
         verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
         verify(parkingSpotDAO, never()).updateParking(any(ParkingSpot.class));
         assertFalse(ticketDAO.updateTicket(ticket));
+        assertEquals(ticket, ticketDAO.getTicket("ABCDEF"));
 
     }
 
