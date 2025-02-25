@@ -17,10 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Date;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,17 +29,23 @@ public class ParkingDataBaseIT {
 
     private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
     private static ParkingSpotDAO parkingSpotDAO = new ParkingSpotDAO();
-    private static TicketDAO ticketDAO  = new TicketDAO();;
-    private static DataBasePrepareService dataBasePrepareService = new DataBasePrepareService();;
+    private static TicketDAO ticketDAO = new TicketDAO();
+    ;
+    private static DataBasePrepareService dataBasePrepareService = new DataBasePrepareService();
+    ;
 
     @Mock
-    private static TicketDAO ticketDAOMock  = new TicketDAO();
+    private static TicketDAO ticketDAOMock = new TicketDAO();
+
+    @Mock
+    private static ParkingSpotDAO parkingSpotDAOMock = new ParkingSpotDAO();
 
     @Mock
     private static InputReaderUtil inputReaderUtil;
 
     @Mock
-    private static Ticket ticket2;
+    private static Ticket ticketMock;
+
 
     @BeforeAll
     private static void setUp() throws Exception {
@@ -73,7 +80,6 @@ public class ParkingDataBaseIT {
         assertNotNull(ticket.getInTime());
 
         return intime;
-        //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
     }
 
     @Test
@@ -96,13 +102,20 @@ public class ParkingDataBaseIT {
         assertEquals(1, ticketDB.getParkingSpot().getNumber());
         assertNotNull(ticketDB.getOutTime());
 
-        //TODO: check that the fare generated and out time are populated correctly in the database
     }
-
+    /**
+     * Test discount with recurring User
+     * Discount for 1h
+     * Generate 1 ticket on DB and 1 ticket with discount
+     */
     @Test
     public void testParkingLotExitRecurringUser() throws Exception {
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAOMock);
+        when(inputReaderUtil.readSelection()).thenReturn(1);
+
+        when(ticketDAOMock.getNbTicket("ABCDEF")).thenReturn(5);
+        parkingService.processIncomingVehicle();
 
         //add first ticket
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
@@ -114,25 +127,27 @@ public class ParkingDataBaseIT {
         ticketDAO.saveTicket(ticket1);
 
         //add second ticket
+        parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         ParkingSpot parkingSpot2 = new ParkingSpot(1, ParkingType.CAR, false);
         Ticket ticket2 = new Ticket();
         ticket2.setVehicleRegNumber("ABCDEF");
         ticket2.setInTime(new Date(System.currentTimeMillis() - (60 * 60 * 1000)));
         ticket2.setParkingSpot(parkingSpot2);
         ticketDAO.saveTicket(ticket2);
+
         parkingService.processExitingVehicle();
 
-        //verify system out println when incoming Vehicle with discount
-        when(inputReaderUtil.readSelection()).thenReturn(1);
-        assertEquals(1.425, ticketDAO.getTicket("ABCDEF").getPrice());
-        parkingService.processIncomingVehicle();
+        assertEquals(1.42, ticketDAO.getTicket("ABCDEF").getPrice());
+
     }
 
-
+    /**
+     * Test with DB off
+     */
     @Test
     public void testParkingLotWhitoutDb() {
         parkingSpotDAO.dataBaseConfig = new DataBaseWrongTestConfig();
-        ticketDAO.dataBaseConfig  = new DataBaseWrongTestConfig();
+        ticketDAO.dataBaseConfig = new DataBaseWrongTestConfig();
 
         parkingSpotDAO.getNextAvailableSlot(null);
         parkingSpotDAO.updateParking(null);
@@ -147,7 +162,7 @@ public class ParkingDataBaseIT {
 
         assertFalse(ticketDAO.saveTicket(null));
         assertEquals(null, ticketDAO.getTicket(null));
-        assertEquals(0,ticketDAO.getNbTicket(null));
+        assertEquals(0, ticketDAO.getNbTicket(null));
 
     }
 
