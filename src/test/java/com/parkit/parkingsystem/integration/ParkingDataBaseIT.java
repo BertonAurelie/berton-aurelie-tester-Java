@@ -62,7 +62,10 @@ public class ParkingDataBaseIT {
     private static void tearDown() {
 
     }
-
+    /**
+     * Test process incoming Vehicle
+     * generate ticket in, get this ticket and assert
+     */
     @Test
     public Date testParkingACar() throws Exception {
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
@@ -81,7 +84,10 @@ public class ParkingDataBaseIT {
 
         return intime;
     }
-
+    /**
+     * Test process existing Vehicle
+     * generate ticket in and test ticket out
+     */
     @Test
     public void testParkingLotExit() throws Exception {
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
@@ -102,11 +108,12 @@ public class ParkingDataBaseIT {
         assertEquals(1, ticketDB.getParkingSpot().getNumber());
         assertNotNull(ticketDB.getOutTime());
 
+
     }
     /**
      * Test discount with recurring User
      * Discount for 1h
-     * Generate 1 ticket on DB and 1 ticket with discount
+     * Generate 1 ticket on DB without discount and 1 ticket with discount
      */
     @Test
     public void testParkingLotExitRecurringUser() throws Exception {
@@ -142,7 +149,7 @@ public class ParkingDataBaseIT {
     }
 
     /**
-     * Test with DB off
+     * Test without DB
      */
     @Test
     public void testParkingLotWhitoutDb() {
@@ -165,6 +172,4 @@ public class ParkingDataBaseIT {
         assertEquals(0, ticketDAO.getNbTicket(null));
 
     }
-
-
 }

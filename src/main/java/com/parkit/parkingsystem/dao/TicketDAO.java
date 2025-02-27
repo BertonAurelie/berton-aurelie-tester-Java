@@ -101,7 +101,7 @@ public class TicketDAO {
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
         } catch (Exception ex) {
-            logger.error("Error fetchingggg", ex);
+            logger.error("Error getting ticket number", ex);
         } finally {
             dataBaseConfig.closeConnection(con);
             return count;

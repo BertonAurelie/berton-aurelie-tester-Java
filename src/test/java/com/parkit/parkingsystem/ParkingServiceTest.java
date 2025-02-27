@@ -87,6 +87,7 @@ public class ParkingServiceTest {
 
         verify(ticketDAO, Mockito.times(1)).updateTicket(any(Ticket.class));
         verify(parkingSpotDAO, never()).updateParking(any(ParkingSpot.class));
+
         assertFalse(ticketDAO.updateTicket(ticket));
         assertEquals(ticket, ticketDAO.getTicket("ABCDEF"));
 
