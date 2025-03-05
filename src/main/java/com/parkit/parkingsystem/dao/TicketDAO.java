@@ -87,6 +87,11 @@ public class TicketDAO {
         return false;
     }
 
+    /**
+     * method count number of tickets in the DB
+     *
+     * @return count
+     */
     public int getNbTicket(String vehicleRegNumber) {
         Connection con = null;
         int count = 0;
